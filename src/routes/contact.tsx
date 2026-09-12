@@ -8,8 +8,8 @@ import { useApp } from "@/store/app";
 import { t } from "@/lib/i18n";
 import { toast } from "sonner";
 
-const WHATSAPP = "967771234567";
-const PHONE = "+967 77 123 4567";
+const WHATSAPP = "967777655876";
+const PHONE = "+967 777 655 876";
 const EMAIL = "hello@alamirjuices.ye";
 
 export const Route = createFileRoute("/contact")({
