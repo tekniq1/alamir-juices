@@ -19,9 +19,9 @@ export function Categories() {
   const lang = useApp((s) => s.lang);
   return (
     <motion.section 
-      initial={{ clipPath: "circle(0% at 50% 100%)" }}
-      whileInView={{ clipPath: "circle(150% at 50% 100%)" }}
-      viewport={{ once: true, margin: "-50px" }}
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px" }}
       transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="mx-auto max-w-7xl px-6 py-16"
     >
