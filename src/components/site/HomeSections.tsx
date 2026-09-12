@@ -18,11 +18,17 @@ const accentBg: Record<string, string> = {
 export function Categories() {
   const lang = useApp((s) => s.lang);
   return (
-    <section className="mx-auto max-w-7xl px-6 py-16">
+    <motion.section 
+      initial={{ clipPath: "circle(0% at 50% 100%)" }}
+      whileInView={{ clipPath: "circle(150% at 50% 100%)" }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="mx-auto max-w-7xl px-6 py-16"
+    >
       <SectionHead title={t("categories_title", lang)} sub={t("categories_sub", lang)} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {categories.map((c, i) => (
-          <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+          <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} whileTap={{ scale: 0.97 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
             <Link
               to="/menu"
               search={{ q: undefined, cat: c.id }}
@@ -40,7 +46,7 @@ export function Categories() {
           </motion.div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -57,7 +63,7 @@ export function Featured() {
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {top.map((p, i) => (
-          <ProductCard key={p.id} product={p} index={i} />
+          <ProductCard key={p.id} product={p} index={i} isFeatured={true} />
         ))}
       </div>
     </section>
@@ -89,9 +95,12 @@ export function Values() {
   );
 }
 
+import { BackButton } from "./BackButton";
+
 export function SectionHead({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="mb-10">
+      <BackButton />
       <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
       {sub && <p className="mt-2 text-muted-foreground">{sub}</p>}
     </div>

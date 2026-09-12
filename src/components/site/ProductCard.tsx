@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const glow: Record<string, string> = { mango: "bg-mango/30", berry: "bg-berry/30", lime: "bg-lime/30" };
 
-export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
+export function ProductCard({ product, index = 0, isFeatured = false }: { product: Product; index?: number; isFeatured?: boolean }) {
   const { lang, wishlist, toggleWishlist, openProduct } = useApp();
   const liked = wishlist.includes(product.id);
 
@@ -16,9 +16,14 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay: (index % 4) * 0.07, duration: 0.5 }}
-      whileHover={{ y: -6 }}
-      className="group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-glass"
+      transition={{ delay: (index % 4) * 0.07, duration: 0.4 }}
+      whileHover="hover"
+      whileTap="tap"
+      variants={{
+        hover: { y: -6 },
+        tap: { scale: 0.96 },
+      }}
+      className={cn("group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-glass", isFeatured && "shadow-lift border-primary/20")}
     >
       <button
         onClick={() => toggleWishlist(product.id)}
@@ -34,12 +39,16 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       )}
 
       <button onClick={() => product.inStock && openProduct(product.id)} className="relative aspect-[4/3] overflow-hidden" aria-label={L(product.name, lang)}>
-        <div className={cn("absolute inset-x-8 bottom-0 h-1/2 rounded-full blur-2xl", glow[product.color])} />
-        <img
+        <div className={cn("absolute inset-x-8 bottom-0 h-1/2 rounded-full blur-2xl transition-opacity", glow[product.color], isFeatured && "group-hover:opacity-80")} />
+        <motion.img
           src={product.image}
           alt={L(product.name, lang)}
           loading="lazy"
-          className={cn("relative h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:rotate-2", !product.inStock && "grayscale")}
+          variants={isFeatured ? {
+            hover: { scale: 1.1, rotate: 2, y: -4 },
+            tap: { scale: 1.15, rotate: -1, y: -6 }
+          } : undefined}
+          className={cn("relative h-full w-full object-cover transition-all duration-700", !isFeatured && "group-hover:scale-110 group-hover:rotate-2", !product.inStock && "grayscale")}
         />
         {!product.inStock && (
           <span className="absolute inset-0 flex items-center justify-center bg-ink/50 text-sm font-semibold text-ink-foreground">{t("sold_out", lang)}</span>

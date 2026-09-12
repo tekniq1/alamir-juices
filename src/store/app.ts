@@ -4,13 +4,10 @@ import type { Lang } from "@/lib/i18n";
 import {
   addons,
   products as seedProducts,
-  seedOrders,
   sizes,
   sugars,
   type AddonId,
   type CartLine,
-  type Order,
-  type OrderStatus,
   type Product,
   type SizeId,
   type SugarId,
@@ -58,9 +55,8 @@ interface AppState {
   updateProduct: (id: string, patch: Partial<Product>) => void;
   addProduct: (p: Product) => void;
 
-  orders: Order[];
-  moveOrder: (id: string, status: OrderStatus) => void;
-  placeOrder: (o: Omit<Order, "id" | "createdAt" | "status">) => Order;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 let counter = 1043;
@@ -80,7 +76,7 @@ export const useApp = create<AppState>()(
       setCartOpen: (cartOpen) => set({ cartOpen }),
       addToCart: (line) =>
         set((s) => {
-          const key = `${line.productId}-${line.size}-${line.sugar}-${[...line.addons].sort().join("+")}`;
+          const key = `${line.productId}-${line.size}-${line.sugar}-${[...line.addons].sort().join("+")}-${line.notes ?? ""}`;
           const existing = s.cart.find((c) => c.lineId === key);
           if (existing) {
             return { cart: s.cart.map((c) => (c.lineId === key ? { ...c, qty: c.qty + line.qty } : c)), cartOpen: true };
@@ -103,19 +99,17 @@ export const useApp = create<AppState>()(
       updateProduct: (id, patch) => set((s) => ({ products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
       addProduct: (p) => set((s) => ({ products: [p, ...s.products] })),
 
-      orders: seedOrders,
-      moveOrder: (id, status) => set((s) => ({ orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)) })),
-      placeOrder: (o) => {
-        const order: Order = { ...o, id: `AJ-${counter++}`, createdAt: new Date().toISOString(), status: "new" };
-        set((s) => ({ orders: [order, ...s.orders], cart: [] }));
-        return order;
-      },
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: "alamir-store",
+      name: "alamir_cart",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ lang: s.lang, cart: s.cart, wishlist: s.wishlist, adminDark: s.adminDark }),
       skipHydration: true,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );

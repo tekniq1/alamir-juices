@@ -32,9 +32,23 @@ export function CartDrawer() {
               <h2 className="flex items-center gap-2 text-lg font-semibold">
                 <ShoppingBag className="size-5 text-primary" /> {t("cart", lang)}
               </h2>
-              <button onClick={() => setCartOpen(false)} className="rounded-full p-2 hover:bg-accent" aria-label="Close">
-                <X className="size-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {cart.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm(lang === "ar" ? "هل أنت متأكد من تفريغ السلة؟" : "Are you sure you want to clear the cart?")) {
+                        useApp.getState().clearCart();
+                      }
+                    }}
+                    className="text-xs font-semibold text-muted-foreground hover:text-berry"
+                  >
+                    {lang === "ar" ? "تفريغ" : "Clear"}
+                  </button>
+                )}
+                <button onClick={() => setCartOpen(false)} className="rounded-full p-2 hover:bg-accent" aria-label="Close">
+                  <X className="size-5" />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
@@ -59,6 +73,11 @@ export function CartDrawer() {
                             {L(size.label, lang)}
                             {line.addons.length > 0 && " • " + line.addons.map((a) => L(addons.find((x) => x.id === a)!.label, lang)).join("، ")}
                           </p>
+                          {line.notes && (
+                            <p className="mt-1 text-xs text-primary-deep/80">
+                              {lang === "ar" ? "ملاحظات: " : "Notes: "} {line.notes}
+                            </p>
+                          )}
                         </div>
                         <button onClick={() => removeLine(line.lineId)} className="text-muted-foreground hover:text-berry" aria-label={t("remove", lang)}>
                           <Trash2 className="size-4" />
@@ -105,7 +124,7 @@ export function CartDrawer() {
                 <Link
                   to="/checkout"
                   onClick={() => setCartOpen(false)}
-                  className="flex h-12 w-full items-center justify-center rounded-full bg-ink text-base font-semibold text-ink-foreground transition hover:bg-primary"
+                  className="flex h-12 w-full items-center justify-center rounded-full bg-ink text-base font-semibold text-ink-foreground shadow-caramel transition hover:bg-primary-deep"
                 >
                   {t("checkout", lang)}
                 </Link>

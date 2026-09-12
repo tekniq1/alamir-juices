@@ -115,9 +115,19 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { useRouterState } from "@tanstack/react-router";
+import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import { useState } from "react";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const lang = useApp((s) => s.lang);
+  const location = useRouterState({ select: (s) => s.location });
+
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !sessionStorage.getItem("alamir_intro_seen");
+  });
 
   useEffect(() => {
     useApp.persist.rehydrate();
@@ -128,11 +138,53 @@ function RootComponent() {
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   }, [lang]);
 
+  useEffect(() => {
+    if (showIntro) {
+      const timer = setTimeout(() => {
+        setShowIntro(false);
+        sessionStorage.setItem("alamir_intro_seen", "true");
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro]);
+
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster position={lang === "ar" ? "bottom-left" : "bottom-right"} richColors />
+      <MotionConfig reducedMotion="user">
+        <AnimatePresence mode="wait">
+          {showIntro ? (
+            <motion.div
+              key="intro"
+              exit={{ opacity: 0, filter: "blur(4px)" }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="relative flex flex-col items-center justify-center"
+              >
+                <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl" />
+                <span className="relative text-7xl drop-shadow-xl">👑</span>
+                <h1 className="mt-4 font-bold text-xl tracking-wide text-primary-deep">{lang === "ar" ? "عصائر الأمير" : "Alamir Juices"}</h1>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="flex min-h-screen flex-col"
+            >
+              <Outlet />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <Toaster position={lang === "ar" ? "bottom-left" : "bottom-right"} richColors />
+      </MotionConfig>
     </QueryClientProvider>
   );
 }

@@ -1,4 +1,4 @@
-﻿import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { MessageCircle, Phone, MapPin, Clock, Mail, Send, Copy, Check } from "lucide-react";
@@ -72,9 +72,9 @@ function ContactPage() {
     {
       icon: MapPin,
       color: "bg-berry/15 text-berry",
-      label: { ar: "العنوان", en: "Address" },
-      value: lang === "ar" ? "عدن، اليمن — فروع متعددة" : "Aden, Yemen — Multiple Branches",
-      action: () => window.open("https://maps.google.com/?q=Aden+Yemen", "_blank"),
+      label: { ar: t("address_label", lang), en: t("address_label", lang) },
+      value: t("address_value", lang),
+      action: () => window.open("https://maps.app.goo.gl/UPmkHrs8SMTnCn2Q6?g_st=awb", "_blank"),
       actionLabel: { ar: "افتح الخريطة", en: "Open map" },
     },
     {

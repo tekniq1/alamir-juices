@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Leaf, Star, Heart, Bike } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -10,19 +10,12 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "من نحن | عصائر الأمير" },
-      { name: "description", content: "اعرف قصة عصائر الأمير — من عربة صغيرة في عدن إلى علامة تجارية تُحضَّر بحب في كل كوب." },
+      { name: "description", content: "اعرف المزيد عن عصائر الأمير — جودة لا تُساوم ومكونات طبيعية تُحضَّر بحب في كل كوب في صنعاء." },
     ],
   }),
   component: AboutPage,
 });
 
-const milestones = [
-  { year: "2015", ar: "أُسِّست عصائر الأمير من عربة صغيرة في شوارع عدن", en: "Alamir Juices founded from a small cart on the streets of Aden" },
-  { year: "2018", ar: "افتتاح أول فرع ثابت في خور مكسر", en: "First permanent branch opened in Khormaksar" },
-  { year: "2021", ar: "إطلاق التوصيل الإلكتروني لأول مرة", en: "Launched online delivery service for the first time" },
-  { year: "2023", ar: "توسع الفروع وإطلاق خط السندوتشات", en: "Branch expansion and launch of the sandwiches line" },
-  { year: "2026", ar: "أكثر من ٥٠٠ طلب يومي ونمو مستمر", en: "Over 500 daily orders and continuous growth" },
-];
 
 const values = [
   { icon: Leaf, color: "bg-lime/20 text-lime", ar: "مكونات طبيعية ١٠٠٪", en: "100% Natural Ingredients", dar: "لا سكر مضاف ولا مواد حافظة — فاكهة وخضار فقط.", den: "No added sugar, no preservatives — just fruit and vegetables." },
@@ -30,6 +23,8 @@ const values = [
   { icon: Heart, color: "bg-berry/20 text-berry", ar: "صُنع بحب", en: "Made with Love", dar: "كل كوب نعصره نضع فيه من قلوبنا قبل كل شيء.", den: "Every cup we press carries our love first and foremost." },
   { icon: Bike, color: "bg-primary/20 text-primary-deep", ar: "توصيل سريع ومبرّد", en: "Fast Cold Delivery", dar: "سلسلة تبريد متكاملة لتصلك الفيتامينات طازجة.", den: "Full cold chain to deliver vitamins fresh to your door." },
 ];
+
+import { BackButton } from "@/components/site/BackButton";
 
 function AboutPage() {
   const lang = useApp((s) => s.lang);
@@ -39,6 +34,9 @@ function AboutPage() {
       {/* Hero */}
       <section className="bg-hero-radial relative overflow-hidden px-6 pt-24 pb-16 text-center">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} className="mx-auto max-w-3xl">
+          <div className="flex justify-center">
+            <BackButton />
+          </div>
           <img src={logo} alt="Alamir Juices" className="mx-auto mb-8 w-32 rounded-3xl shadow-lift" />
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             {t("about_title", lang)}
@@ -68,29 +66,6 @@ function AboutPage() {
             </motion.div>
           ))}
         </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="mx-auto max-w-3xl px-6 py-16">
-        <h2 className="mb-12 text-center text-3xl font-bold">{lang === "ar" ? "رحلتنا" : "Our Journey"}</h2>
-        <ol className="relative border-s border-border">
-          {milestones.map((m, i) => (
-            <motion.li
-              key={m.year}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="mb-10 ms-6"
-            >
-              <span className="absolute -start-3 flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ring-4 ring-background">
-                {i + 1}
-              </span>
-              <time className="mb-1 block text-sm font-bold text-primary-deep">{m.year}</time>
-              <p className="text-sm text-muted-foreground">{lang === "ar" ? m.ar : m.en}</p>
-            </motion.li>
-          ))}
-        </ol>
       </section>
 
       {/* CTA */}

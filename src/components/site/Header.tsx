@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, Search, ShoppingBag, PackageSearch, Languages, Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "motion/react";
 import { useState } from "react";
 import { useApp, cartCount } from "@/store/app";
 import { t } from "@/lib/i18n";
@@ -11,8 +11,20 @@ export function Header() {
   const { lang, toggleLang, cart, setCartOpen, wishlist } = useApp();
   const [q, setQ] = useState("");
   const [mobile, setMobile] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const navigate = useNavigate();
   const count = cartCount(cart);
+
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    if (latest > previous && latest > 150) {
+      setHidden(true);
+      setMobile(false);
+    } else {
+      setHidden(false);
+    }
+  });
 
   const links = [
     { to: "/", label: t("nav_home", lang) },
@@ -20,7 +32,6 @@ export function Header() {
     { to: "/offers", label: t("nav_offers", lang) },
     { to: "/about", label: t("nav_about", lang) },
     { to: "/contact", label: t("nav_contact", lang) },
-    { to: "/track", label: t("nav_track", lang) },
   ] as const;
 
   const submitSearch = (e: React.FormEvent) => {
@@ -29,7 +40,12 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-6">
+    <motion.header
+      variants={{ visible: { y: 0 }, hidden: { y: "-100%" } }}
+      animate={hidden ? "hidden" : "visible"}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+      className="sticky top-0 z-40 px-3 pt-3 sm:px-6"
+    >
       <div className="glass mx-auto flex max-w-7xl items-center gap-3 rounded-2xl px-3 py-2 sm:px-4">
         <Link to="/" className="flex shrink-0 items-center gap-2">
           <img src={logo} alt="Alamir Juices" width={44} height={36} className="h-9 w-11 rounded-lg object-cover" />
@@ -72,9 +88,6 @@ export function Header() {
             <Languages className="size-4" />
             {lang === "ar" ? "EN" : "عربي"}
           </button>
-          <Link to="/track" className="hidden size-9 items-center justify-center rounded-full transition hover:bg-accent sm:flex" aria-label={t("nav_track", lang)}>
-            <PackageSearch className="size-5" />
-          </Link>
           <Link to="/menu" search={{ q: undefined, cat: "wishlist" }} className="relative flex size-9 items-center justify-center rounded-full transition hover:bg-accent" aria-label={t("wishlist", lang)}>
             <Heart className={cn("size-5", wishlist.length && "fill-berry text-berry")} />
           </Link>
@@ -128,6 +141,6 @@ export function Header() {
           </motion.nav>
         )}
       </AnimatePresence>
-    </header>
+    </motion.header>
   );
 }

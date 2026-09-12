@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { motion } from "motion/react";
-import { useState } from "react";
-import { Apple, Banknote, CreditCard, MapPin, Zap, CalendarClock, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect } from "react";
+import { MapPin, Banknote, Landmark, Store, Bike, Crosshair, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { SectionHead } from "@/components/site/HomeSections";
@@ -12,215 +12,298 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
-    meta: [
-      { title: "إتمام الطلب | عصائر الأمير" },
-      { name: "description", content: "حدّد موقعك على الخريطة، اختر وقت التوصيل وطريقة الدفع، وأكّد طلبك من عصائر الأمير." },
-      { property: "og:title", content: "Checkout — Alamir Juices" },
-      { property: "og:description", content: "Drop your pin, pick a delivery slot and pay your way." },
-    ],
+    meta: [{ title: "إتمام الطلب | عصائر الأمير" }],
   }),
   component: CheckoutPage,
 });
 
-const slots = ["12:00", "13:00", "14:00", "16:00", "18:00", "20:00"];
-
 function CheckoutPage() {
-  const { lang, cart, products, placeOrder } = useApp();
+  const { lang, cart, products, clearCart } = useApp();
   const navigate = useNavigate();
-  const [pin, setPin] = useState<{ x: number; y: number } | null>(null);
-  const [timing, setTiming] = useState<"instant" | "scheduled">("instant");
-  const [slot, setSlot] = useState(slots[2]);
-  const [payment, setPayment] = useState<"apple" | "card" | "cash">("apple");
+  const [step, setStep] = useState(0);
+
+  // Form State
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [placed, setPlaced] = useState<string | null>(null);
+  const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
+  const [address, setAddress] = useState("");
+  const [payment, setPayment] = useState<"cash" | "transfer">("cash");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const subtotal = cartTotal(cart);
-  const fee = subtotal >= 50 || subtotal === 0 ? 0 : 5;
+  const fee = deliveryType === "delivery" && subtotal > 0 && subtotal < 50 ? 5 : 0;
+  const total = subtotal + fee;
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cart.length) return toast.error(t("empty_cart", lang));
-    if (!pin) return toast.error(t("pick_location", lang));
-    if (!name || !phone) return toast.error(lang === "ar" ? "أدخل الاسم ورقم الجوال" : "Enter name and phone");
-    const order = placeOrder({
-      customer: name,
-      phone,
-      items: cart.map((l) => ({ name: products.find((p) => p.id === l.productId)!.name, qty: l.qty, size: l.size })),
-      total: subtotal + fee,
-      eta: timing === "instant" ? 30 : 60,
-      payment,
-      address: `${lang === "ar" ? "موقع الخريطة" : "Map pin"} (${pin.x.toFixed(0)}, ${pin.y.toFixed(0)})`,
-    });
-    setPlaced(order.id);
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error(lang === "ar" ? "المتصفح لا يدعم تحديد الموقع" : "Geolocation not supported");
+      return;
+    }
+    const toastId = toast.loading(lang === "ar" ? "جاري تحديد موقعك..." : "Locating...");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setAddress(`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`);
+        toast.success(lang === "ar" ? "تم تحديد الموقع" : "Location found", { id: toastId });
+      },
+      () => {
+        toast.error(lang === "ar" ? "فشل تحديد الموقع. يرجى كتابته يدوياً." : "Failed to locate. Please enter manually.", { id: toastId });
+      }
+    );
   };
 
-  if (placed) {
-    const waMsg = encodeURIComponent(
-      lang === "ar"
-        ? `مرحباً، طلبي رقم ${placed} — أريد الاستفسار عن موعد التوصيل`
-        : `Hello, my order is ${placed} — I'd like to ask about my delivery status`,
+  const submit = () => {
+    if (!cart.length) return;
+    const lines = cart.map((l) => {
+      const p = products.find((x) => x.id === l.productId);
+      const pName = p ? (lang === "ar" ? p.name.ar : p.name.en) : l.productId;
+      const sizeLabel = L(sizes.find((s) => s.id === l.size)!.label, lang);
+      const notes = l.notes ? ` (ملاحظات: ${l.notes})` : "";
+      return `- ${pName} | ${sizeLabel} | كمية: ${l.qty} | ${l.unitPrice * l.qty} ر.ي${notes}`;
+    });
+
+    const msg = lang === "ar"
+      ? `*طلب جديد من عصائر الأمير* 🥤\n\n*العميل:* ${name}\n*الهاتف:* ${phone}\n*طريقة الاستلام:* ${deliveryType === "delivery" ? "توصيل" : "استلام من المحل"}\n${deliveryType === "delivery" ? `*الموقع:* ${address}\n` : ""}\n*المنتجات:*\n${lines.join("\n")}\n\n*طريقة الدفع:* ${payment === "cash" ? "كاش" : "حوالة بنكية"}\n*الإجمالي:* ${total} ر.ي`
+      : `*New Order - Alamir Juices* 🥤\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Method:* ${deliveryType === "delivery" ? "Delivery" : "Pickup"}\n${deliveryType === "delivery" ? `*Address:* ${address}\n` : ""}\n*Items:*\n${lines.join("\n")}\n\n*Payment:* ${payment === "cash" ? "Cash" : "Transfer"}\n*Total:* ${total} YER`;
+
+    const encoded = encodeURIComponent(msg);
+    window.open(`https://wa.me/967771234567?text=${encoded}`, "_blank");
+    
+    setIsSuccess(true);
+    clearCart();
+  };
+
+  if (!useApp((s) => s._hasHydrated)) {
+    return (
+      <SiteLayout>
+        <div className="mx-auto flex max-w-lg items-center justify-center px-6 py-32">
+          <div className="size-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+        </div>
+      </SiteLayout>
     );
+  }
+
+  if (isSuccess) {
     return (
       <SiteLayout>
         <div className="mx-auto max-w-lg px-6 py-24 text-center">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="mx-auto flex size-24 items-center justify-center rounded-full bg-lime/20 text-lime">
             <CheckCircle2 className="size-12" />
           </motion.div>
-          <h1 className="mt-6 text-3xl font-bold">{t("order_placed", lang)}</h1>
-          <p className="mt-2 text-muted-foreground">{t("order_placed_sub", lang)}</p>
-          <p className="mt-4 text-4xl font-bold tracking-wider text-primary-deep">{placed}</p>
-          <div className="mt-8 flex flex-col gap-3">
-            <button
-              onClick={() => window.open(`https://wa.me/967771234567?text=${waMsg}`, "_blank")}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] font-semibold text-white transition hover:bg-[#1ebe5d]"
-            >
-              <span>💬</span> {lang === "ar" ? "تواصل معنا عبر واتساب" : "Contact us via WhatsApp"}
-            </button>
-            <div className="flex justify-center gap-3">
-              <button onClick={() => navigate({ to: "/track", search: { id: placed } })} className="h-12 rounded-full bg-ink px-6 font-semibold text-ink-foreground">
-                {t("nav_track", lang)}
-              </button>
-              <Link to="/menu" search={{ q: undefined, cat: undefined }} className="glass flex h-12 items-center rounded-full px-6 font-semibold">
-                {t("back_to_store", lang)}
-              </Link>
-            </div>
-          </div>
+          <h1 className="mt-6 text-3xl font-bold">{lang === "ar" ? "تم تجهيز الطلب" : "Order Prepared"}</h1>
+          <p className="mt-2 text-muted-foreground">{lang === "ar" ? "تم تحويلك إلى واتساب لإرسال الطلب للمحل." : "You have been redirected to WhatsApp to send your order."}</p>
+          <Link to="/menu" search={{ q: undefined, cat: undefined }} className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-ink px-8 font-semibold text-ink-foreground shadow-caramel transition hover:bg-primary-deep">
+            {lang === "ar" ? "طلب جديد" : "New Order"}
+          </Link>
         </div>
       </SiteLayout>
     );
   }
 
-  return (
-    <SiteLayout>
-      <form onSubmit={submit} className="mx-auto grid max-w-7xl gap-8 px-6 pt-10 pb-20 lg:grid-cols-[1fr_380px]">
-        <div className="space-y-8">
-          <SectionHead title={t("checkout", lang)} />
+  if (cart.length === 0) {
+    return (
+      <SiteLayout>
+        <div className="mx-auto max-w-lg px-6 py-32 text-center">
+          <span className="text-6xl">🛒</span>
+          <h1 className="mt-6 text-2xl font-bold">{t("empty_cart", lang)}</h1>
+          <p className="mt-2 text-muted-foreground">{lang === "ar" ? "يبدو أنك لم تقم بإضافة أي منتجات إلى السلة حتى الآن." : "It looks like you haven't added any products to your cart yet."}</p>
+          <Link to="/menu" search={{ q: undefined, cat: undefined }} className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-ink px-8 font-semibold text-ink-foreground shadow-caramel transition hover:bg-primary-deep">
+            {lang === "ar" ? "تصفح المنيو" : "Browse Menu"}
+          </Link>
+        </div>
+      </SiteLayout>
+    );
+  }
 
-          <Block title={t("delivery_address", lang)} icon={<MapPin className="size-4" />}>
-            <div
-              onClick={(e) => {
-                const r = e.currentTarget.getBoundingClientRect();
-                setPin({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
-              }}
-              className="relative aspect-[16/8] cursor-crosshair overflow-hidden rounded-2xl border border-border bg-secondary"
-              style={{ backgroundImage: "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
-            >
-              <div className="absolute inset-x-0 top-1/3 h-3 -rotate-6 bg-primary/20" />
-              <div className="absolute inset-y-0 left-2/3 w-3 rotate-6 bg-primary/20" />
-              <div className="absolute bottom-6 left-8 h-16 w-28 rounded-full bg-lime/20" />
-              <div className="absolute top-6 right-10 h-14 w-14 rounded-2xl bg-mango/20" />
-              {!pin && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">{t("pick_location", lang)}</p>}
-              {pin && (
-                <motion.div key={`${pin.x}-${pin.y}`} initial={{ y: -30, scale: 0.5 }} animate={{ y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: `${pin.x}%`, top: `${pin.y}%` }}>
-                  <MapPin className="size-9 fill-berry text-berry drop-shadow-lg" />
-                  <span className="absolute -bottom-1 left-1/2 size-3 -translate-x-1/2 animate-ping rounded-full bg-berry/50" />
-                </motion.div>
-              )}
-            </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name", lang)} className="h-11 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("phone", lang)} dir="ltr" className="h-11 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
-            </div>
-          </Block>
-
-          <Block title={t("delivery_time", lang)} icon={<Zap className="size-4" />}>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Option active={timing === "instant"} onClick={() => setTiming("instant")} icon={<Zap className="size-5" />} label={t("instant", lang)} />
-              <Option active={timing === "scheduled"} onClick={() => setTiming("scheduled")} icon={<CalendarClock className="size-5" />} label={t("scheduled", lang)} />
-            </div>
-            {timing === "scheduled" && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-3 flex flex-wrap gap-2">
-                {slots.map((s) => (
-                  <button key={s} type="button" onClick={() => setSlot(s)} className={cn("rounded-full border px-4 py-1.5 text-sm", slot === s ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{s}</button>
-                ))}
+  const steps = [
+    {
+      title: lang === "ar" ? "البيانات الشخصية" : "Personal Info",
+      content: (
+        <div className="space-y-4">
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name", lang)} className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("phone", lang)} dir="ltr" className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+        </div>
+      ),
+      isValid: name.trim().length > 2 && phone.trim().length > 4,
+    },
+    {
+      title: lang === "ar" ? "طريقة الاستلام" : "Delivery Method",
+      content: (
+        <div className="space-y-6">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Option active={deliveryType === "delivery"} onClick={() => setDeliveryType("delivery")} icon={<Bike className="size-5" />} label={lang === "ar" ? "توصيل للمنزل" : "Home Delivery"} />
+            <Option active={deliveryType === "pickup"} onClick={() => setDeliveryType("pickup")} icon={<Store className="size-5" />} label={lang === "ar" ? "استلام من المحل" : "Store Pickup"} />
+          </div>
+          
+          <AnimatePresence mode="popLayout">
+            {deliveryType === "delivery" && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-3 overflow-hidden">
+                <button onClick={requestLocation} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-secondary font-medium text-foreground transition hover:bg-accent">
+                  <Crosshair className="size-4 text-primary" />
+                  {lang === "ar" ? "تحديد موقعي التلقائي" : "Auto-detect my location"}
+                </button>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder={lang === "ar" ? "أو اكتب عنوانك بالتفصيل هنا..." : "Or type your address in detail..."}
+                  rows={3}
+                  className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+                />
               </motion.div>
             )}
-          </Block>
-
-          <Block title={t("payment", lang)} icon={<CreditCard className="size-4" />}>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Option active={payment === "apple"} onClick={() => setPayment("apple")} icon={<Apple className="size-5" />} label={t("apple_pay", lang)} />
-              <Option active={payment === "card"} onClick={() => setPayment("card")} icon={<CreditCard className="size-5" />} label={t("card", lang)} />
-              <Option active={payment === "cash"} onClick={() => setPayment("cash")} icon={<Banknote className="size-5" />} label={t("cash", lang)} />
-            </div>
-          </Block>
+            {deliveryType === "pickup" && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex overflow-hidden rounded-xl bg-secondary p-4">
+                <div className="flex gap-3 text-sm">
+                  <MapPin className="size-5 text-primary shrink-0" />
+                  <p>{lang === "ar" ? "سيتم تجهيز طلبك لاستلامه من فرعنا الرئيسي: صنعاء - اليمن." : "Your order will be prepared for pickup at our main branch: Sanaa - Yemen."}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        <aside className="glass h-fit rounded-3xl p-6 lg:sticky lg:top-24">
-          <h2 className="font-semibold">{t("cart", lang)}</h2>
-          <ul className="mt-4 space-y-3 text-sm">
-            {cart.length === 0 && <li className="text-muted-foreground">{t("empty_cart", lang)}</li>}
+      ),
+      isValid: deliveryType === "pickup" || (deliveryType === "delivery" && address.trim().length > 5),
+    },
+    {
+      title: lang === "ar" ? "طريقة الدفع" : "Payment Method",
+      content: (
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Option active={payment === "cash"} onClick={() => setPayment("cash")} icon={<Banknote className="size-5" />} label={lang === "ar" ? "كاش (عند الاستلام)" : "Cash on delivery"} />
+            <Option active={payment === "transfer"} onClick={() => setPayment("transfer")} icon={<Landmark className="size-5" />} label={lang === "ar" ? "حوالة بنكية" : "Bank Transfer"} />
+          </div>
+          <AnimatePresence mode="popLayout">
+            {payment === "transfer" && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                <div className="rounded-xl border border-border bg-card p-4 text-sm leading-relaxed">
+                  <p className="font-semibold text-primary">{lang === "ar" ? "بيانات التحويل:" : "Transfer Details:"}</p>
+                  <p className="mt-2 text-muted-foreground">{lang === "ar" ? "[سيتم إضافة حسابات المحل هنا — بنك الكريمي، النجم، إلخ]" : "[Store accounts will be added here]"}</p>
+                  <p className="mt-2 font-medium text-amber-500">{lang === "ar" ? "يرجى إرفاق صورة السند في رسالة الواتساب بعد إرسال الطلب." : "Please attach the receipt in WhatsApp after sending the order."}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ),
+      isValid: true,
+    },
+    {
+      title: lang === "ar" ? "مراجعة الطلب" : "Review Order",
+      content: (
+        <div className="space-y-5">
+          <div className="rounded-2xl bg-secondary p-4 text-sm space-y-2">
+            <Row label={lang === "ar" ? "الاسم" : "Name"} value={name} />
+            <Row label={lang === "ar" ? "الهاتف" : "Phone"} value={phone} />
+            <Row label={lang === "ar" ? "الاستلام" : "Delivery"} value={deliveryType === "delivery" ? (lang === "ar" ? "توصيل" : "Delivery") : (lang === "ar" ? "من المحل" : "Pickup")} />
+            {deliveryType === "delivery" && <Row label={lang === "ar" ? "الموقع" : "Address"} value={address} className="items-start" valueClass="text-end max-w-[60%] line-clamp-2" />}
+            <Row label={lang === "ar" ? "الدفع" : "Payment"} value={payment === "cash" ? (lang === "ar" ? "كاش" : "Cash") : (lang === "ar" ? "حوالة" : "Transfer")} />
+          </div>
+          
+          <ul className="space-y-3 text-sm">
             {cart.map((l) => {
               const p = products.find((x) => x.id === l.productId)!;
               return (
-                <li key={l.lineId} className="flex items-center gap-3">
+                <li key={l.lineId} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
                   <img src={p.image} alt="" className="size-12 rounded-xl object-cover" />
                   <div className="flex-1">
                     <p className="font-medium">{L(p.name, lang)}</p>
                     <p className="text-xs text-muted-foreground">{L(sizes.find((s) => s.id === l.size)!.label, lang)} × {l.qty}</p>
+                    {l.notes && <p className="mt-1 text-xs text-primary-deep/80">{l.notes}</p>}
                   </div>
-                  <span>{formatPrice(l.unitPrice * l.qty, lang)}</span>
+                  <span className="font-semibold">{formatPrice(l.unitPrice * l.qty, lang)}</span>
                 </li>
               );
             })}
           </ul>
-          <div className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
-            <Row label={t("subtotal", lang)} value={formatPrice(subtotal, lang)} />
-            <Row label={t("delivery_fee", lang)} value={fee ? formatPrice(fee, lang) : t("free", lang)} />
-            <Row label={t("total", lang)} value={formatPrice(subtotal + fee, lang)} bold />
-          </div>
-          {/* Coupon code */}
-          <div className="mt-4 flex gap-2">
-            <input
-              placeholder={lang === "ar" ? "كود الخصم (اختياري)" : "Discount code (optional)"}
-              className="h-10 flex-1 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-            />
-            <button
-              type="button"
-              className="h-10 rounded-xl border border-border px-3 text-xs font-semibold transition hover:bg-accent"
-            >
-              {lang === "ar" ? "تطبيق" : "Apply"}
-            </button>
-          </div>
-          {/* Notes */}
-          <textarea
-            placeholder={lang === "ar" ? "ملاحظات على الطلب (اختياري)" : "Order notes (optional)"}
-            rows={2}
-            className="mt-3 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          <button type="submit" className="mt-4 h-12 w-full rounded-full bg-ink font-semibold text-ink-foreground shadow-caramel transition hover:bg-primary-deep">
-            {t("place_order", lang)}
-          </button>
-        </aside>
-      </form>
-    </SiteLayout>
-  );
-}
 
-function Block({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+          <div className="space-y-2 rounded-2xl bg-secondary p-4 text-sm">
+            <Row label={t("subtotal", lang)} value={formatPrice(subtotal, lang)} />
+            {deliveryType === "delivery" && <Row label={t("delivery_fee", lang)} value={fee ? formatPrice(fee, lang) : t("free", lang)} />}
+            <div className="my-2 h-px w-full bg-border" />
+            <Row label={t("total", lang)} value={formatPrice(total, lang)} bold />
+          </div>
+        </div>
+      ),
+      isValid: true,
+    },
+  ];
+
+  const current = steps[step];
+
   return (
-    <section className="rounded-3xl border border-border bg-card p-5 shadow-glass sm:p-6">
-      <h2 className="mb-4 flex items-center gap-2 font-semibold"><span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground">{icon}</span>{title}</h2>
-      {children}
-    </section>
+    <SiteLayout>
+      <div className="mx-auto max-w-2xl px-6 pt-10 pb-24">
+        <SectionHead title={t("checkout", lang)} />
+        
+        {/* Progress Bar */}
+        <div className="mb-8 flex gap-2">
+          {steps.map((_, i) => (
+            <div key={i} className={cn("h-1.5 flex-1 rounded-full transition-colors duration-300", i <= step ? "bg-primary" : "bg-secondary")} />
+          ))}
+        </div>
+
+        <div className="rounded-3xl border border-border bg-card p-5 shadow-glass sm:p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: lang === "ar" ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: lang === "ar" ? 20 : -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="mb-6 text-xl font-bold">{current.title}</h2>
+              {current.content}
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-8 flex gap-3 pt-6 border-t border-border">
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={() => setStep(step - 1)}
+                className="flex h-12 items-center justify-center rounded-full border border-border px-6 font-semibold transition hover:bg-accent"
+              >
+                {lang === "ar" ? "السابق" : "Back"}
+              </button>
+            )}
+            {step < steps.length - 1 ? (
+              <button
+                type="button"
+                disabled={!current.isValid}
+                onClick={() => setStep(step + 1)}
+                className="flex h-12 flex-1 items-center justify-center rounded-full bg-ink font-semibold text-ink-foreground transition hover:bg-primary-deep disabled:opacity-50"
+              >
+                {lang === "ar" ? "التالي" : "Next"}
+              </button>
+            ) : (
+              <button
+                onClick={submit}
+                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#25D366] font-semibold text-white shadow-caramel transition hover:bg-[#1ebe5d]"
+              >
+                <span>💬</span>
+                {lang === "ar" ? "إرسال عبر واتساب" : "Send via WhatsApp"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </SiteLayout>
   );
 }
 
 function Option({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
     <button type="button" onClick={onClick} className={cn("flex items-center gap-3 rounded-2xl border p-4 text-sm font-medium transition", active ? "border-primary bg-primary/10 ring-2 ring-primary/30" : "border-border hover:border-primary/50")}>
-      <span className={cn("flex size-9 items-center justify-center rounded-xl", active ? "bg-primary text-primary-foreground" : "bg-secondary")}>{icon}</span>
+      <span className={cn("flex size-9 items-center justify-center rounded-xl shrink-0", active ? "bg-primary text-primary-foreground" : "bg-secondary")}>{icon}</span>
       {label}
     </button>
   );
 }
 
-function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+function Row({ label, value, bold, className, valueClass }: { label: string; value: string; bold?: boolean; className?: string; valueClass?: string }) {
   return (
-    <div className={cn("flex justify-between", bold && "text-base font-bold")}>
+    <div className={cn("flex justify-between", bold && "text-base font-bold", className)}>
       <span className={bold ? "" : "text-muted-foreground"}>{label}</span>
-      <span>{value}</span>
+      <span className={valueClass}>{value}</span>
     </div>
   );
 }

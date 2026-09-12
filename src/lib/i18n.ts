@@ -58,8 +58,8 @@ const dict = {
   not_found: { ar: "لم نجد هذا الطلب", en: "We couldn't find that order" },
   about_title: { ar: "قصة الأمير", en: "The Prince's Story" },
   about_sub: {
-    ar: "بدأنا من عربة صغيرة في عدن بحلم واحد: أن يتذوق كل بيت طعم الفاكهة الحقيقي.",
-    en: "We started from a small cart in Aden with one dream: every home tasting real fruit.",
+    ar: "بدأنا من عربة صغيرة في صنعاء بحلم واحد: أن يتذوق كل بيت طعم الفاكهة الحقيقي.",
+    en: "We started from a small cart in Sanaa with one dream: every home tasting real fruit.",
   },
   value_natural: { ar: "طبيعي 100%", en: "100% Natural" },
   value_natural_d: { ar: "لا مركزات ولا ألوان ولا سكر مضاف. فاكهة فقط.", en: "No concentrates, no colors, no added sugar. Just fruit." },
@@ -69,7 +69,7 @@ const dict = {
   value_cold_d: { ar: "حقائب مبردة تحافظ على الطعم والفيتامينات حتى بابك.", en: "Insulated bags keep taste and vitamins intact to your door." },
   value_hygiene: { ar: "تحضير صحي", en: "Hygienic Preparation" },
   value_hygiene_d: { ar: "مطبخ مفتوح، معايير HACCP، وتعقيم كل ساعة.", en: "Open kitchen, HACCP standards, hourly sanitization." },
-  footer_tag: { ar: "صُنع بحب في عدن", en: "Made with love in Aden" },
+  footer_tag: { ar: "صُنع بحب في صنعاء", en: "Made with love in Sanaa" },
   in_stock: { ar: "متوفر", en: "In stock" },
   sold_out: { ar: "نفد", en: "Sold out" },
   name: { ar: "الاسم", en: "Name" },
@@ -100,7 +100,7 @@ const dict = {
   working_hours: { ar: "ساعات العمل", en: "Working Hours" },
   daily_hours: { ar: "يومياً من ٨ صباحاً حتى ١٢ منتصف الليل", en: "Daily 8:00 AM – 12:00 AM" },
   address_label: { ar: "العنوان", en: "Address" },
-  address_value: { ar: "عدن، اليمن — فروع متعددة", en: "Aden, Yemen — Multiple Branches" },
+  address_value: { ar: "صنعاء، اليمن — الفرع الرئيسي", en: "Sanaa, Yemen — Main Branch" },
 } as const;
 
 export type DictKey = keyof typeof dict;

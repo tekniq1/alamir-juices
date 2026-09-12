@@ -84,6 +84,7 @@ export interface CartLine {
   addons: AddonId[];
   qty: number;
   unitPrice: number;
+  notes?: string;
 }
 
 export type OrderStatus = "new" | "preparing" | "picked" | "delivering" | "completed";
@@ -368,9 +369,8 @@ export const riders: Rider[] = [
   { id: "r5", name: "حمزة", x: 18, y: 30, status: "returning", orders: 0 },
 ];
 
-export const branches: Branch[] = [
-  { id: "b1", name: { ar: "فرع خور مكسر", en: "Khormaksar Branch" }, x: 60, y: 42, radius: 22, openOrders: 5 },
-  { id: "b2", name: { ar: "فرع المنصورة", en: "Mansoura Branch" }, x: 26, y: 58, radius: 18, openOrders: 3 },
+export const branches = [
+  { id: "b1", name: { ar: "الفرع الرئيسي", en: "Main Branch" }, x: 50, y: 50, radius: 25, openOrders: 0 },
 ];
 
 export const salesTrend = [
