@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { MapPin, Banknote, Landmark, Store, Bike, Crosshair, CheckCircle2 } from "lucide-react";
@@ -66,7 +66,7 @@ function CheckoutPage() {
       : `*New Order - Alamir Juices* 🥤\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Method:* ${deliveryType === "delivery" ? "Delivery" : "Pickup"}\n${deliveryType === "delivery" ? `*Address:* ${address}\n` : ""}\n*Items:*\n${lines.join("\n")}\n\n*Payment:* ${payment === "cash" ? "Cash" : "Transfer"}\n*Total:* ${total} YER`;
 
     const encoded = encodeURIComponent(msg);
-    window.open(`https://wa.me/967776655876?text=${encoded}`, "_blank");
+    window.open(`https://wa.me/${siteSettings.whatsapp}?text=${encoded}`, "_blank");
     
     setIsSuccess(true);
     clearCart();
@@ -307,3 +307,4 @@ function Row({ label, value, bold, className, valueClass }: { label: string; val
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Leaf, Star, Heart, Bike } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -27,7 +27,7 @@ const values = [
 import { BackButton } from "@/components/site/BackButton";
 
 function AboutPage() {
-  const lang = useApp((s) => s.lang);
+  const { lang, siteContent } = useApp();
 
   return (
     <SiteLayout>
@@ -39,7 +39,7 @@ function AboutPage() {
           </div>
           <img src={logo} alt="Alamir Juices" className="mx-auto mb-8 w-32 rounded-3xl shadow-lift" />
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            {t("about_title", lang)}
+            {(lang === "ar" ? siteContent.aboutTitleAr : siteContent.aboutTitleEn)}
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">{t("about_sub", lang)}</p>
         </motion.div>
@@ -85,3 +85,4 @@ function AboutPage() {
     </SiteLayout>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+﻿import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ArrowDown, Sparkles } from "lucide-react";
@@ -9,7 +9,7 @@ import { SplashButton } from "./SplashButton";
 const Hero3D = lazy(() => import("./Hero3D"));
 
 export function Hero() {
-  const lang = useApp((s) => s.lang);
+  const { lang, siteContent } = useApp();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -92,3 +92,4 @@ export function Hero() {
     </section>
   );
 }
+

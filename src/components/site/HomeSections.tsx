@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { ArrowUpRight, Leaf, Snowflake, Sparkles, Timer } from "lucide-react";
 import { useApp } from "@/store/app";
 import { L, t } from "@/lib/i18n";
-import { categories } from "@/data/mock";
+
 import { ProductCard } from "./ProductCard";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ const accentBg: Record<string, string> = {
 };
 
 export function Categories() {
-  const lang = useApp((s) => s.lang);
+  const { lang, categories } = useApp();
   return (
     <motion.section 
       initial={{ opacity: 0, y: 40 }}
@@ -27,7 +27,7 @@ export function Categories() {
     >
       <SectionHead title={t("categories_title", lang)} sub={t("categories_sub", lang)} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {categories.map((c, i) => (
+        {(categories || []).map((c, i) => (
           <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} whileTap={{ scale: 0.97 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
             <Link
               to="/menu"
@@ -36,8 +36,8 @@ export function Categories() {
             >
               <span className="text-4xl transition group-hover:scale-125 group-hover:rotate-12">{c.emoji}</span>
               <div className="mt-8">
-                <h3 className="font-semibold leading-tight">{L(c.name, lang)}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">{L(c.tagline, lang)}</p>
+                <h3 className="font-semibold leading-tight">{(lang === "ar" ? c.nameAr : c.nameEn)}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">{(lang === "ar" ? c.nameAr : c.nameEn)}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary-deep">
                   {t("view_all", lang)} <ArrowUpRight className="size-3.5 rtl:-scale-x-100" />
                 </span>
@@ -71,7 +71,7 @@ export function Featured() {
 }
 
 export function Values() {
-  const lang = useApp((s) => s.lang);
+  const { lang, categories } = useApp();
   const items = [
     { icon: Leaf, k: "value_natural", d: "value_natural_d", c: "bg-lime/20 text-lime" },
     { icon: Timer, k: "value_speed", d: "value_speed_d", c: "bg-mango/20 text-mango" },
@@ -106,3 +106,4 @@ export function SectionHead({ title, sub }: { title: string; sub?: string }) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+﻿import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, Trash2, X, ShoppingBag } from "lucide-react";
 import { useApp, cartTotal } from "@/store/app";
@@ -114,7 +114,7 @@ export function CartDrawer() {
                     const msg = lang === "ar"
                       ? `مرحباً، أريد طلب التالي من عصائر الأمير:\n\n${lines.join("\n")}\n\nالإجمالي: ${total} ر.ي`
                       : `Hello, I'd like to order from Alamir Juices:\n\n${lines.join("\n")}\n\nTotal: ${total} YER`;
-                    window.open(`https://wa.me/967776655876?text=${encodeURIComponent(msg)}`, "_blank");
+                    window.open(`https://wa.me/${siteSettings.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
                     setCartOpen(false);
                   }}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] font-semibold text-white transition hover:bg-[#1ebe5d]"
@@ -136,3 +136,4 @@ export function CartDrawer() {
     </AnimatePresence>
   );
 }
+

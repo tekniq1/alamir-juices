@@ -8,8 +8,8 @@ import { useApp } from "@/store/app";
 import { t } from "@/lib/i18n";
 import { toast } from "sonner";
 
-const WHATSAPP = "967776655876";
-const PHONE = "+967 776 655 876";
+
+
 const EMAIL = "hello@alamirjuices.ye";
 
 export const Route = createFileRoute("/contact")({
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
-  const lang = useApp((s) => s.lang);
+  const { lang, siteSettings } = useApp();
   const [name, setName] = useState("");
   const [msg, setMsg] = useState("");
   const [copied, setCopied] = useState(false);
@@ -41,24 +41,24 @@ function ContactPage() {
         ? `مرحباً، أنا ${name || "..."}\n${msg || "أريد التواصل معكم."}`
         : `Hello, I am ${name || "..."}\n${msg || "I would like to get in touch."}`,
     );
-    window.open(`https://wa.me/${WHATSAPP}?text=${text}`, "_blank");
+    window.open(`https://wa.me/${siteSettings.whatsapp}?text=${text}`, "_blank");
   };
 
   const infoItems = [
     {
       icon: MessageCircle,
       color: "bg-[#25D366]/15 text-[#25D366]",
-      label: { ar: "واتساب", en: "WhatsApp" },
-      value: PHONE,
-      action: () => window.open(`https://wa.me/${WHATSAPP}`, "_blank"),
+      label: { ar: "واتساب", en: "siteSettings.whatsapp" },
+      value: siteSettings.phone,
+      action: () => window.open(`https://wa.me/${siteSettings.whatsapp}`, "_blank"),
       actionLabel: { ar: "ابدأ المحادثة", en: "Start chat" },
     },
     {
-      icon: Phone,
+      icon: siteSettings.phone,
       color: "bg-primary/15 text-primary-deep",
-      label: { ar: "الهاتف", en: "Phone" },
-      value: PHONE,
-      action: () => window.open(`tel:${PHONE}`, "_blank"),
+      label: { ar: "الهاتف", en: "siteSettings.phone" },
+      value: siteSettings.phone,
+      action: () => window.open(`tel:${siteSettings.phone}`, "_blank"),
       actionLabel: { ar: "اتصل الآن", en: "Call now" },
     },
     {
@@ -123,7 +123,7 @@ function ContactPage() {
             ))}
           </div>
 
-          {/* WhatsApp form */}
+          {/* siteSettings.whatsapp form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -135,7 +135,7 @@ function ContactPage() {
               {lang === "ar" ? "راسلنا مباشرة" : "Message us directly"}
             </h2>
             <p className="mb-5 text-xs text-muted-foreground">
-              {lang === "ar" ? "سنرد خلال دقائق عبر واتساب" : "We'll reply within minutes via WhatsApp"}
+              {lang === "ar" ? "سنرد خلال دقائق عبر واتساب" : "We'll reply within minutes via siteSettings.whatsapp"}
             </p>
 
             <div className="space-y-3">
@@ -157,17 +157,17 @@ function ContactPage() {
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] font-semibold text-white transition hover:bg-[#1ebe5d]"
               >
                 <Send className="size-4" />
-                {t("whatsapp_inquire", lang)}
+                {t("siteSettings.whatsapp_inquire", lang)}
               </button>
             </div>
 
             <div className="mt-5 flex items-center gap-2 rounded-2xl bg-secondary p-3">
               <button
-                onClick={() => copy(PHONE)}
+                onClick={() => copy(siteSettings.phone)}
                 className="flex flex-1 items-center gap-2 text-sm"
               >
                 <Copy className="size-4 text-muted-foreground" />
-                <span dir="ltr" className="font-medium">{PHONE}</span>
+                <span dir="ltr" className="font-medium">{siteSettings.phone}</span>
               </button>
               {copied && <Check className="size-4 text-lime" />}
             </div>
@@ -177,3 +177,4 @@ function ContactPage() {
     </SiteLayout>
   );
 }
+

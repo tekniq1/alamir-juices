@@ -98,12 +98,23 @@ function OffersPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Separate offers logically
-  const activeOrSoon = mockOffers.filter(o => o.status === "active" || o.status === "ending_soon");
-  const upcoming = mockOffers.filter(o => o.status === "upcoming");
+  const { offers: rawOffers } = useApp();
   
-  // Decide what to show if there are no active offers
-  const displayedOffers = activeOrSoon.length > 0 ? mockOffers : (upcoming.length > 0 ? upcoming : []);
+  // Adapt state offers to match the UI format, or just map them directly.
+  const offersList: Offer[] = rawOffers.map(o => ({
+    id: o.id,
+    emoji: o.emoji,
+    title: { ar: o.title, en: o.title }, // Fallback to same title for EN for now
+    desc: { ar: "", en: "" }, // Add descriptions to state later if needed
+    discount: o.discount,
+    status: (o.status as OfferStatus) || "active",
+    color: o.status === "active" ? "from-primary/20 to-primary/5 border-primary/20" : o.status === "ending_soon" ? "from-mango/20 to-mango/5 border-mango/20" : "from-secondary to-secondary/50 border-border",
+    textColor: o.status === "active" ? "text-primary-deep" : o.status === "ending_soon" ? "text-mango" : "text-muted-foreground"
+  }));
+
+  const activeOrSoon = offersList.filter(o => o.status === "active" || o.status === "ending_soon");
+  const upcoming = offersList.filter(o => o.status === "upcoming");
+  const displayedOffers = activeOrSoon.length > 0 ? offersList : (upcoming.length > 0 ? upcoming : []);
 
   if (isLoading) {
     return (

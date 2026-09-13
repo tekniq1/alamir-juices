@@ -8,7 +8,7 @@ import { ProductCardSkeleton } from "@/components/site/ProductSkeleton";
 import { SectionHead } from "@/components/site/HomeSections";
 import { useApp } from "@/store/app";
 import { L, t } from "@/lib/i18n";
-import { categories } from "@/data/mock";
+
 import { cn } from "@/lib/utils";
 
 type MenuSearch = { q?: string; cat?: string };
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/menu")({
 function MenuPage() {
   const { q, cat } = Route.useSearch();
   const navigate = useNavigate();
-  const { lang, products, wishlist } = useApp();
+  const { lang, products, wishlist, categories } = useApp();
   const [limit, setLimit] = useState(12);
   const [isLoading, setIsLoading] = useState(true);
   const query = (q ?? "").toLowerCase();
@@ -57,7 +57,7 @@ function MenuPage() {
   const visibleList = list.slice(0, limit);
   const hasMore = limit < list.length;
 
-  const tabs = [{ id: undefined as string | undefined, label: t("all", lang) }, ...categories.map((c) => ({ id: c.id as string, label: L(c.name, lang) }))];
+  const tabs = [{ id: undefined as string | undefined, label: t("all", lang) }, ...(categories || []).map((c) => ({ id: c.id as string, label: (lang === "ar" ? c.nameAr : c.nameEn) }))];
 
   const getEmptyState = () => {
     if (cat === "wishlist") {
@@ -198,3 +198,4 @@ function MenuPage() {
     </SiteLayout>
   );
 }
+
