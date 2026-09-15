@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { MapPin, Banknote, Landmark, Store, Bike, Crosshair, CheckCircle2 } from "lucide-react";
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 function CheckoutPage() {
-  const { lang, cart, products, clearCart } = useApp();
+  const { lang, cart, products, clearCart, siteSettings } = useApp();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
@@ -46,8 +46,9 @@ function CheckoutPage() {
         toast.success(lang === "ar" ? "تم تحديد الموقع" : "Location found", { id: toastId });
       },
       () => {
-        toast.error(lang === "ar" ? "فشل تحديد الموقع. يرجى كتابته يدوياً." : "Failed to locate. Please enter manually.", { id: toastId });
-      }
+        toast.error(lang === "ar" ? "فشل تحديد الموقع (تأكد من السماح للمتصفح). يرجى إدخاله يدوياً." : "Failed to locate. Please allow permissions or enter manually.", { id: toastId });
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 

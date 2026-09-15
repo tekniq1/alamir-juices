@@ -1,4 +1,4 @@
-﻿import { Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, Trash2, X, ShoppingBag } from "lucide-react";
 import { useApp, cartTotal } from "@/store/app";
@@ -6,7 +6,7 @@ import { formatPrice, L, t } from "@/lib/i18n";
 import { sizes, addons } from "@/data/mock";
 
 export function CartDrawer() {
-  const { cartOpen, setCartOpen, cart, products, updateQty, removeLine, lang } = useApp();
+  const { cartOpen, setCartOpen, cart, products, updateQty, removeLine, lang, siteSettings } = useApp();
   const total = cartTotal(cart);
   const side = lang === "ar" ? -1 : 1;
 
