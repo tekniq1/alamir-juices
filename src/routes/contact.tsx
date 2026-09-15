@@ -48,15 +48,15 @@ function ContactPage() {
     {
       icon: MessageCircle,
       color: "bg-[#25D366]/15 text-[#25D366]",
-      label: { ar: "واتساب", en: "siteSettings.whatsapp" },
-      value: siteSettings.phone,
+      label: { ar: "واتساب", en: "WhatsApp" },
+      value: siteSettings.whatsapp,
       action: () => window.open(`https://wa.me/${siteSettings.whatsapp}`, "_blank"),
       actionLabel: { ar: "ابدأ المحادثة", en: "Start chat" },
     },
     {
-      icon: siteSettings.phone,
+      icon: Phone,
       color: "bg-primary/15 text-primary-deep",
-      label: { ar: "الهاتف", en: "siteSettings.phone" },
+      label: { ar: "الهاتف", en: "Phone" },
       value: siteSettings.phone,
       action: () => window.open(`tel:${siteSettings.phone}`, "_blank"),
       actionLabel: { ar: "اتصل الآن", en: "Call now" },
@@ -135,7 +135,7 @@ function ContactPage() {
               {lang === "ar" ? "راسلنا مباشرة" : "Message us directly"}
             </h2>
             <p className="mb-5 text-xs text-muted-foreground">
-              {lang === "ar" ? "سنرد خلال دقائق عبر واتساب" : "We'll reply within minutes via siteSettings.whatsapp"}
+              {lang === "ar" ? "سنرد خلال دقائق عبر واتساب" : "We'll reply within minutes via WhatsApp"}
             </p>
 
             <div className="space-y-3">
@@ -157,7 +157,7 @@ function ContactPage() {
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] font-semibold text-white transition hover:bg-[#1ebe5d]"
               >
                 <Send className="size-4" />
-                {t("siteSettings.whatsapp_inquire", lang)}
+                {t("whatsapp_inquire", lang as any)}
               </button>
             </div>
 

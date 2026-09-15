@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Lang } from "@/lib/i18n";
 import {
@@ -138,34 +138,32 @@ export const useApp = create<AppState>()(
       addProduct: (p) => set((s) => ({ products: [p, ...s.products] })),
 
       offers: [
-        { id: "o1", title: "??? ??????", discount: "20%", status: "active", emoji: "??" },
-        { id: "o2", title: "??? ?????? ???????", discount: "1+2", status: "ending_soon", emoji: "??" },
-        { id: "o3", title: "???? ???????? ???????", discount: "900 ?.?", status: "upcoming", emoji: "??" }
+        { id: "o1", title: "عرض الجمعة", discount: "20%", status: "active", emoji: "🔥" },
+        { id: "o2", title: "عرض العائلة", discount: "1+2", status: "ending_soon", emoji: "👨‍👩‍👧‍👦" }
       ],
       updateOffer: (id, patch) => set((s) => ({ offers: s.offers.map((o) => (o.id === id ? { ...o, ...patch } : o)) })),
       addOffer: (o) => set((s) => ({ offers: [o, ...s.offers] })),
       deleteOffer: (id) => set((s) => ({ offers: s.offers.filter((o) => o.id !== id) })),
 
       categories: [
-        { id: "c1", nameAr: "????? ??????", nameEn: "Fresh Juices", emoji: "??" },
-        { id: "c2", nameAr: "???? ???", nameEn: "Milkshakes", emoji: "??" },
-        { id: "c3", nameAr: "?????", nameEn: "Smoothies", emoji: "??" },
-        { id: "c4", nameAr: "??????", nameEn: "Mojitos", emoji: "?????" },
-        { id: "c5", nameAr: "????? ???????", nameEn: "Fruit Bowls", emoji: "??" }
+        { id: "juices", nameAr: "العصائر", nameEn: "Fresh Juices", emoji: "🧃" },
+        { id: "sandwiches", nameAr: "السندوتشات", nameEn: "Sandwiches", emoji: "🥪" },
+        { id: "hot_drinks", nameAr: "مشروبات ساخنة", nameEn: "Hot Drinks", emoji: "☕" },
+        { id: "fruits", nameAr: "فواكه", nameEn: "Fruits", emoji: "🍎" }
       ],
       updateCategory: (id, patch) => set((s) => ({ categories: s.categories.map((c) => (c.id === id ? { ...c, ...patch } : c)) })),
       addCategory: (c) => set((s) => ({ categories: [c, ...s.categories] })),
       deleteCategory: (id) => set((s) => ({ categories: s.categories.filter((c) => c.id !== id) })),
 
       siteContent: {
-        heroTitleAr: "??????.. ??? ???????",
+        heroTitleAr: "الأمير.. ملك العصائر",
         heroTitleEn: "Alamir.. King of Juices",
-        heroDescAr: "????? ?????? ????? ????? ???? ???? ???????? ?????? ??? ????.",
-        heroDescEn: "Premium fresh juices blended to order and delivered chilled.",
-        aboutTitleAr: "?? ??????",
+        heroDescAr: "عصائر طبيعية طازجة",
+        heroDescEn: "Premium fresh juices",
+        aboutTitleAr: "عن الأمير",
         aboutTitleEn: "About Alamir",
-        aboutStoryAr: "???? ??? ?? ????? ?????? ????? ??????? ?? ???...",
-        aboutStoryEn: "We bring you the essence of nature in a cup..."
+        aboutStoryAr: "قصتنا بدأت من شغفنا بالعصائر...",
+        aboutStoryEn: "Our story begins with passion..."
       },
       updateContent: (patch) => set((s) => ({ siteContent: { ...s.siteContent, ...patch } })),
 
@@ -173,7 +171,7 @@ export const useApp = create<AppState>()(
         whatsapp: "967776655876",
         phone: "+967 776 655 876",
         mapsLink: "https://maps.app.goo.gl/UPmkHrs8SMTnCn2Q6",
-        workingHoursAr: "?????? ?? ? ?????? ??? ?? ????? ?????",
+        workingHoursAr: "يومياً من 8 صباحاً إلى 12 منتصف الليل",
         workingHoursEn: "Daily from 8 AM to 12 AM"
       },
       updateSettings: (patch) => set((s) => ({ siteSettings: { ...s.siteSettings, ...patch } })),
@@ -182,16 +180,12 @@ export const useApp = create<AppState>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: "alamir_cart",
+      name: "alamir_cart_v2",
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ lang: s.lang, cart: s.cart, wishlist: s.wishlist, adminDark: s.adminDark, products: s.products, adminPassword: s.adminPassword, isAuthenticated: s.isAuthenticated, offers: s.offers, categories: s.categories, siteContent: s.siteContent, siteSettings: s.siteSettings }),
       skipHydration: true,
       onRehydrateStorage: () => (state, error) => {
-        if (state) {
-          if (!state.categories) state.categories = [{ id: "c1", nameAr: "????? ??????", nameEn: "Fresh Juices", emoji: "??" }, { id: "c2", nameAr: "???? ???", nameEn: "Milkshakes", emoji: "??" }];
-          if (!state.siteContent) state.siteContent = { heroTitleAr: "??????.. ??? ???????", heroTitleEn: "Alamir.. King of Juices", heroDescAr: "", heroDescEn: "", aboutTitleAr: "", aboutTitleEn: "", aboutStoryAr: "", aboutStoryEn: "" };
-          if (!state.siteSettings) state.siteSettings = { whatsapp: "967776655876", phone: "", mapsLink: "", workingHoursAr: "", workingHoursEn: "" };
-        }
         state?.setHasHydrated(true);
       },
     },

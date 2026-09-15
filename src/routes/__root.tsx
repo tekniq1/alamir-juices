@@ -118,9 +118,12 @@ function RootShell({ children }: { children: ReactNode }) {
 import { useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { useState } from "react";
+import { useSupabaseSync } from "@/lib/sync";
 
 function RootComponent() {
+  useSupabaseSync();
   const { queryClient } = Route.useRouteContext();
+
   const lang = useApp((s) => s.lang);
   const location = useRouterState({ select: (s) => s.location });
 
